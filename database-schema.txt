@@ -1,0 +1,193 @@
+<?php
+
+// Migration 1: Create users table
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateUsersTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('username')->unique();
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('nim')->unique(); // Nomor Induk Mahasiswa
+            $table->string('full_name');
+            $table->text('bio')->nullable();
+            $table->string('profile_photo')->nullable();
+            $table->string('location')->nullable();
+            $table->string('website')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('users');
+    }
+}
+
+// Migration 2: Create posts table
+class CreatePostsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->text('caption')->nullable();
+            $table->string('image')->nullable(); // Path gambar
+            $table->string('github_link')->nullable(); // Link ke GitHub
+            $table->string('demo_link')->nullable(); // Link demo/portfolio
+            $table->integer('likes_count')->default(0);
+            $table->timestamps();
+            
+            $table->index('user_id');
+            $table->index('created_at');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('posts');
+    }
+}
+
+// Migration 3: Create follows table
+class CreateFollowsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('follows', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('follower_id')->constrained('users')->onDelete('cascade'); // Yang follow
+            $table->foreignId('following_id')->constrained('users')->onDelete('cascade'); // Yang di-follow
+            $table->timestamps();
+            
+            // Mencegah duplikasi follow
+            $table->unique(['follower_id', 'following_id']);
+            $table->index('follower_id');
+            $table->index('following_id');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('follows');
+    }
+}
+
+// Migration 4: Create likes table
+class CreateLikesTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('likes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+            
+            // Mencegah duplikasi like
+            $table->unique(['user_id', 'post_id']);
+            $table->index('user_id');
+            $table->index('post_id');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('likes');
+    }
+}
+
+// Migration 5: Create notifications table
+class CreateNotificationsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Penerima notifikasi
+            $table->foreignId('actor_id')->constrained('users')->onDelete('cascade'); // Yang melakukan aksi
+            $table->enum('type', ['follow', 'like']); // Tipe notifikasi
+            $table->foreignId('post_id')->nullable()->constrained()->onDelete('cascade'); // Jika tipe = like
+            $table->boolean('is_read')->default(false);
+            $table->timestamps();
+            
+            $table->index('user_id');
+            $table->index('is_read');
+            $table->index('created_at');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('notifications');
+    }
+}
+
+// Migration 6: Add followers and following count to users table
+class AddFollowCountsToUsersTable extends Migration
+{
+    public function up()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->integer('followers_count')->default(0)->after('website');
+            $table->integer('following_count')->default(0)->after('followers_count');
+            $table->integer('posts_count')->default(0)->after('following_count');
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['followers_count', 'following_count', 'posts_count']);
+        });
+    }
+}
+
+/*
+CATATAN PENTING UNTUK SQLite:
+
+1. Foreign Key Constraints:
+   - Pastikan foreign key constraints diaktifkan di config/database.php:
+   'sqlite' => [
+       'foreign_key_constraints' => true,
+   ]
+
+2. Index & Performance:
+   - Index sudah ditambahkan pada kolom yang sering di-query
+   - Untuk search user, gunakan: WHERE username LIKE ? OR full_name LIKE ?
+
+3. Counter Columns (followers_count, likes_count, dll):
+   - Gunakan database events/observers untuk update counter secara otomatis
+   - Atau gunakan withCount() di Eloquent untuk query real-time
+
+4. Cara Running Migration:
+   php artisan migrate
+
+5. Query Contoh:
+   
+   // Search user
+   User::where('username', 'like', "%{$keyword}%")
+       ->orWhere('full_name', 'like', "%{$keyword}%")
+       ->get();
+   
+   // Get user feed (posts dari yang di-follow)
+   Post::whereIn('user_id', $user->following()->pluck('following_id'))
+       ->orderBy('created_at', 'desc')
+       ->get();
+   
+   // Check if user likes a post
+   $post->likes()->where('user_id', $userId)->exists();
+   
+   // Check if user follows another user
+   $user->following()->where('following_id', $targetUserId)->exists();
+*/

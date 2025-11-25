@@ -15,19 +15,11 @@ return [
     */
 
     'postmark' => [
-<<<<<<< HEAD
         'key' => env('POSTMARK_API_KEY'),
     ],
 
     'resend' => [
         'key' => env('RESEND_API_KEY'),
-=======
-        'token' => env('POSTMARK_TOKEN'),
-    ],
-
-    'resend' => [
-        'key' => env('RESEND_KEY'),
->>>>>>> origin/dewa
     ],
 
     'ses' => [

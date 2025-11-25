@@ -3,11 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-require __DIR__ . '/auth.php';
-
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\PublicProfileController;
-
 Route::get('/', function () {
     return view('landing');
 });
@@ -22,7 +17,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
+require __DIR__.'/auth.php';
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\PublicProfileController;
 
 // Auth Pages
 Route::view('/login', 'auth.login')->name('login');

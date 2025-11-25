@@ -31,15 +31,18 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            // TAMBAHAN: Validasi username agar fitur Profile jalan
+            'username' => ['required', 'string', 'max:255', 'unique:'.User::class, 'alpha_dash'], 
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'nomor_mahasiswa' => ['required', 'string', 'max:255', 'unique:'.User::class],
+            'nomor_mahasiswa' => ['required', 'string', 'max:255', 'unique:'.User::class], // Ini custom field mu, saya pertahankan
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'username' => $request->username, // TAMBAHAN: Simpan username
             'email' => $request->email,
-            'nomor_mahasiswa' => $request->nomor_mahasiswa,
+            'nomor_mahasiswa' => $request->nomor_mahasiswa, // Custom field mu
             'password' => Hash::make($request->password),
         ]);
 

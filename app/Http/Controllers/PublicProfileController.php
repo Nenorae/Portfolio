@@ -9,7 +9,10 @@ class PublicProfileController extends Controller
 {
     public function show($username)
     {
-        $user = User::with(['skills', 'portfolios'])->where('username', $username)->firstOrFail();
+        // Logic sesuai persis dengan gambar yang kamu kirim
+        $user = User::with(['skills', 'portfolios'])
+                    ->where('username', $username)
+                    ->firstOrFail();
 
         return view('public.profile', [
             'user' => $user

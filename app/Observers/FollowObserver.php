@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Follow;
-use App\Models\Notification;
+use App\Services\NotificationService;
 
 //
 // Tugas:
@@ -16,6 +16,8 @@ use App\Models\Notification;
 //
 class FollowObserver
 {
+    public function __construct(protected NotificationService $notificationService) {}
+
     /**
      * Handle the Follow "created" event.
      */
@@ -27,12 +29,8 @@ class FollowObserver
         // Increment followers_count untuk user yang di-follow
         $follow->following()->increment('followers_count');
 
-        // Kirim notifikasi ke user yang di-follow
-        Notification::create([
-            'user_id' => $follow->following_id,
-            'actor_id' => $follow->follower_id,
-            'type' => 'follow',
-        ]);
+        // Kirim notifikasi ke user yang di-follow via service
+        $this->notificationService->notifyFollow($follow->follower_id, $follow->following_id);
     }
 
     /**
@@ -45,5 +43,8 @@ class FollowObserver
 
         // Decrement followers_count untuk user yang di-follow
         $follow->following()->decrement('followers_count');
+
+        // Hapus notifikasi via service
+        $this->notificationService->deleteNotification('follow', $follow->follower_id, $follow->following_id);
     }
 }

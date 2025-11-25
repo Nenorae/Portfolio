@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+<<<<<<< HEAD
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -29,16 +30,45 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+=======
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use App\Models\Skill;
+use App\Models\Portfolio;
+
+
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+
+        // Tambahan untuk profil publik
+        'username',
+        'bio',
+        'major',
+        'generation',
+        'profile_photo',
+    ];
+
+>>>>>>> origin/dewa
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+<<<<<<< HEAD
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
+=======
+>>>>>>> origin/dewa
     protected function casts(): array
     {
         return [
@@ -46,4 +76,21 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+<<<<<<< HEAD
 }
+=======
+
+    // Relasi Keahlian
+    public function skills()
+    {
+        return $this->hasMany(Skill::class);
+    }
+
+    // Relasi Portofolio
+    public function portfolios()
+    {
+        return $this->hasMany(Portfolio::class);
+    }
+}
+
+>>>>>>> origin/dewa

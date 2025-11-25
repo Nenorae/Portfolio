@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Follow;
+use App\Models\Like;
+use App\Models\Post;
+use App\Observers\FollowObserver;
+use App\Observers\LikeObserver;
+use App\Observers\PostObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Post::observe(PostObserver::class);
+        Like::observe(LikeObserver::class);
+        Follow::observe(FollowObserver::class);
     }
 }

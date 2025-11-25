@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Like;
+use App\Models\Notification;
 
 //
 // Tugas:
@@ -15,5 +16,31 @@ use App\Models\Like;
 //
 class LikeObserver
 {
-    //
+    /**
+     * Handle the Like "created" event.
+     */
+    public function created(Like $like): void
+    {
+        // Increment likes_count pada post
+        $like->post()->increment('likes_count');
+
+        // Kirim notifikasi ke pemilik post, jika yang like bukan pemilik post
+        if ($like->user_id !== $like->post->user_id) {
+            Notification::create([
+                'user_id' => $like->post->user_id,
+                'actor_id' => $like->user_id,
+                'post_id' => $like->post_id,
+                'type' => 'like',
+            ]);
+        }
+    }
+
+    /**
+     * Handle the Like "deleted" event.
+     */
+    public function deleted(Like $like): void
+    {
+        // Decrement likes_count pada post
+        $like->post()->decrement('likes_count');
+    }
 }

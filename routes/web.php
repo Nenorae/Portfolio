@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PublicProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\SearchController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,47 +14,47 @@ use App\Http\Controllers\SearchController;
 |--------------------------------------------------------------------------
 */
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
-
-// Halaman Depan (Landing Page) - Dari kode atas
+// Halaman Depan
 Route::get('/', function () {
     return view('landing');
 });
 
-// Dashboard - Menggunakan prioritas kode atas (dengan middleware verified)
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// Dashboard
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-// Grup Auth (Hanya bisa diakses jika sudah login)
+// Fitur Autentikasi
 Route::middleware('auth')->group(function () {
-    // Profile Routes (Bawaan Kode Atas - Lebih lengkap karena ada update/destroy)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Profil (Edit)
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [ProfileController::class, 'uploadProfilePhoto'])->name('profile.photo.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // --- Tambahan dari Kode Bawah (Portfolio & Skills) ---
+    // Postingan (Upload Karya)
+    // Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show'); // New route for single post
 
-    // Portfolio CRUD
-    Route::view('/portfolio', 'portfolio.index')->name('portfolio.index');
-    Route::view('/portfolio/create', 'portfolio.create')->name('portfolio.create');
-    Route::view('/portfolio/{id}/edit', 'portfolio.edit')->name('portfolio.edit');
-
-    // Skills CRUD
-    Route::view('/skills', 'skills.index')->name('skills.index');
-    Route::view('/skills/create', 'skills.create')->name('skills.create');
-    Route::view('/skills/{id}/edit', 'skills.edit')->name('skills.edit');
-
+    // API Search & Notifikasi
     Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.users');
-
     Route::get('/notifications/json', [NotificationController::class, 'getJsonNotifications'])->name('notifications.json');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
-    Route::get('/{username}', [PublicProfileController::class, 'show'])->name('profile.show');
+    // Like/Unlike posts
+    Route::post('/posts/{post}/like', [\App\Http\Controllers\LikeController::class, 'store'])->name('posts.like');
+    Route::delete('/posts/{post}/like', [\App\Http\Controllers\LikeController::class, 'destroy'])->name('posts.unlike');
 
+    // Follow/Unfollow users
+    Route::post('/users/{user}/follow', [\App\Http\Controllers\FollowController::class, 'store'])->name('users.follow');
+    Route::delete('/users/{user}/follow', [\App\Http\Controllers\FollowController::class, 'destroy'])->name('users.unfollow');
+
+    // Profil Internal (Wajib paling bawah)
+    Route::get('/{username}', [PublicProfileController::class, 'show'])->name('profile.show');
 });
 
-// Public Profile Dynamic Route (Bisa diakses tanpa login)
+// Profil Publik
 Route::get('/u/{username}', [PublicProfileController::class, 'show'])->name('public.profile');
-
-// Mengambil route auth bawaan (Login, Register, Logout)
-// Ini menggantikan route manual login/logout/register yang ada di kode bawah

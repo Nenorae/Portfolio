@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth; // Tambahkan ini untuk akses Auth
 
 //
 // Tugas:
@@ -19,7 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 // - likes() hasMany Like
 //
 // Methods:
-// - isLikedBy($userId) Cek apakah post di-like user
+// - isLikedBy($userId) Cek apakah post di-like user tertentu
+// - hasLiked() Cek apakah post di-like user yang sedang LOGIN (Fix Error)
 // - scopeLatest($query) Sorting berdasarkan terbaru
 // - scopeFromFollowing($query, $userId) Feed berdasarkan user yang di-follow
 //
@@ -52,7 +54,22 @@ class Post extends Model
     }
 
     /**
-     * Cek apakah post di-like oleh user tertentu.
+     * FIX ERROR: Method ini yang dipanggil di dashboard.blade.php
+     * Cek apakah user yang sedang login sudah like post ini.
+     */
+    public function hasLiked(): bool
+    {
+        // Jika user tidak login, return false
+        if (!Auth::check()) {
+            return false;
+        }
+
+        // Cek menggunakan relasi likes
+        return $this->likes()->where('user_id', Auth::id())->exists();
+    }
+
+    /**
+     * Cek apakah post di-like oleh user tertentu (spesifik ID).
      */
     public function isLikedBy(int $userId): bool
     {
@@ -62,9 +79,9 @@ class Post extends Model
     /**
      * Scope untuk mengurutkan post berdasarkan yang terbaru.
      */
-    public function scopeLatest(Builder $query): Builder
+    public function scopeLatest(Builder $query): Builder // Note: Signature harus kompatibel dengan parent jika ada conflict
     {
-        return $query->latest();
+        return $query->orderBy('created_at', 'desc');
     }
 
     /**
@@ -72,8 +89,11 @@ class Post extends Model
      */
     public function scopeFromFollowing(Builder $query, int $userId): Builder
     {
+        // Ambil ID user yang difollow oleh $userId
+        // Catatan: Pastikan User model memiliki relasi 'following'
         $followingIds = User::find($userId)?->following()->pluck('following_id');
 
+        // Kembalikan query post dimana user_id ada dalam daftar following
         return $query->whereIn('user_id', $followingIds ?? []);
     }
 }

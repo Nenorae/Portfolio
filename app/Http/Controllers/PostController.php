@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
-use App\Http\Requests\StorePostRequest; // Pastikan file request ini ada
-use App\Http\Requests\UpdatePostRequest; // Pastikan file request ini ada
+use App\Http\Requests\StorePostRequest;
+use App\Models\Post; // Pastikan file request ini ada
+// Pastikan file request ini ada
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -19,10 +19,10 @@ class PostController extends Controller
 
         // Tampilkan post dari user yang diikuti DAN post sendiri
         $posts = Post::whereIn('user_id', $followingIds)
-                    ->orWhere('user_id', Auth::id())
-                    ->with('user') // Eager load user data
-                    ->latest()
-                    ->paginate(10);
+            ->orWhere('user_id', Auth::id())
+            ->with('user') // Eager load user data
+            ->latest()
+            ->paginate(10);
 
         return view('posts.index', compact('posts'));
     }
@@ -53,7 +53,7 @@ class PostController extends Controller
     // show(Post $post) GET: Detail post
     public function show(Post $post)
     {
-        return view('posts.show', compact('post'));
+        return view('profile.posts', compact('post'));
     }
 
     // edit(Post $post) GET: Form edit post
@@ -63,6 +63,7 @@ class PostController extends Controller
         if ($post->user_id !== Auth::id()) {
             abort(403);
         }
+
         return view('posts.edit', compact('post'));
     }
 

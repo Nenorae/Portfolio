@@ -24,6 +24,13 @@ class LikeController extends Controller
             }
         }
 
+        if (request()->wantsJson()) {
+            return response()->json([
+                'liked' => true,
+                'likes_count' => $post->likes()->count(),
+            ]);
+        }
+
         return back();
     }
 
@@ -31,6 +38,13 @@ class LikeController extends Controller
     public function destroy(Post $post)
     {
         $post->likes()->where('user_id', Auth::id())->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'liked' => false,
+                'likes_count' => $post->likes()->count(),
+            ]);
+        }
 
         return back();
     }

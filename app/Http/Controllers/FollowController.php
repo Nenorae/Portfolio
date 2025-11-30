@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\NewFollower;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-// use App\Notifications\NewFollower; // Uncomment jika Notifikasi sudah dibuat
 
 class FollowController extends Controller
 {
@@ -13,6 +13,9 @@ class FollowController extends Controller
     public function store(User $user)
     {
         if (Auth::id() === $user->id) {
+            if (request()->wantsJson()) {
+                return response()->json(['error' => 'You cannot follow yourself.'], 422);
+            }
             return back()->with('error', 'You cannot follow yourself.');
         }
 
@@ -20,8 +23,13 @@ class FollowController extends Controller
         Auth::user()->following()->syncWithoutDetaching([$user->id]);
 
         // Kirim notifikasi saat follow
-        // $user->notify(new NewFollower(Auth::user())); 
+        $user->notify(new NewFollower(Auth::user()));
         // (Pastikan Class Notification dibuat agar baris di atas bisa jalan)
+        if (request()->wantsJson()) {
+            return response()->json([
+                'following' => true,
+            ]);
+        }
 
         return back()->with('success', 'You are now following ' . $user->name);
     }
@@ -31,6 +39,11 @@ class FollowController extends Controller
     {
         Auth::user()->following()->detach($user->id);
 
+        if (request()->wantsJson()) {
+            return response()->json([
+                'following' => false,
+            ]);
+        }
         return back()->with('success', 'Unfollowed ' . $user->name);
     }
 }

@@ -29,19 +29,39 @@
         @foreach($posts as $post)
         <article class="post-item p-4 hover:bg-white/[0.02] transition-colors cursor-pointer">
             <div class="flex gap-3">
-                <div class="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0 overflow-hidden border border-gray-600">
+                <a href="{{ route('profile.show', $post->user->username) }}" class="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0 overflow-hidden border border-gray-600">
                     <img src="https://ui-avatars.com/api/?name={{ $post->user->name }}&background=random" class="w-full h-full object-cover">
-                </div>
+                </a>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
                         <div class="flex items-center gap-2 truncate">
-                            <span class="font-bold truncate text-white">{{ $post->user->name }}</span>
-                            <span class="text-white/40 text-sm">{{ '@'.strtolower(str_replace(' ', '', $post->user->name)) }}</span>
+                            <a href="{{ route('profile.show', $post->user->username) }}">
+                                <span class="font-bold truncate text-white">{{ $post->user->name }}</span>
+                                <span class="text-white/40 text-sm">{{ '@'.$post->user->username }}</span>
+                            </a>
                             <span class="text-white/40 text-sm">• {{ $post->created_at->diffForHumans() }}</span>
                         </div>
+                        {{-- Follow Button --}}
+                        @if(Auth::id() !== $post->user->id)
+                            @if(Auth::user()->isFollowing($post->user))
+                                <form action="{{ route('users.unfollow', $post->user) }}" method="POST" class="follow-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-gray-700 transition-colors">
+                                        Mengikuti
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('users.follow', $post->user) }}" method="POST" class="follow-form">
+                                    @csrf
+                                    <button type="submit" class="bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold hover:opacity-90 transition-opacity">
+                                        Ikuti
+                                    </button>
+                                </form>
+                            @endif
+                        @endif
                         <button class="text-white/40 hover:text-white">•••</button>
                     </div>
-
                     <p class="mb-3 text-sm leading-relaxed text-white">
                         <span class="font-bold block mb-1 text-base">{{ $post->title }}</span>
                         {{ $post->caption }}
@@ -58,12 +78,28 @@
                     @endif
 
                     <div class="flex justify-between text-white/40 max-w-md">
-                        <button class="flex items-center gap-2 hover:text-primary transition-colors group">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <span class="text-xs">{{ $post->likes_count }}</span>
-                        </button>
+                        {{-- Like Button --}}
+                        @auth
+                            <form action="{{ $post->hasLiked(Auth::user()) ? route('posts.unlike', $post) : route('posts.like', $post) }}" method="POST" class="like-form">
+                                @csrf
+                                @if($post->hasLiked(Auth::user()))
+                                    @method('DELETE')
+                                @endif
+                                <button type="submit" class="flex items-center gap-2 {{ $post->hasLiked(Auth::user()) ? 'text-red-500' : 'hover:text-primary' }} transition-colors group">
+                                    <svg class="w-5 h-5" fill="{{ $post->hasLiked(Auth::user()) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="text-xs">{{ $post->likes_count }}</span>
+                                </button>
+                            </form>
+                        @else
+                            <button class="flex items-center gap-2 hover:text-primary transition-colors group">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span class="text-xs">{{ $post->likes_count }}</span>
+                            </button>
+                        @endauth
                         @if($post->github_link)
                         <a href="{{ $post->github_link }}" target="_blank" class="flex items-center gap-2 hover:text-white transition-colors group">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -161,6 +197,82 @@
                         spinner.classList.add('hidden');
                     });
             }
+
+            // AJAX for Likes and Follows
+            document.getElementById('posts-container').addEventListener('submit', function(e) {
+                if (e.target.matches('.like-form') || e.target.matches('.follow-form')) {
+                    e.preventDefault();
+                    const form = e.target;
+                    const action = form.action;
+                    const method = form.querySelector('input[name="_method"]')?.value || form.method;
+                    const csrfToken = form.querySelector('input[name="_token"]').value;
+
+                    fetch(action, {
+                        method: method,
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (form.matches('.like-form')) {
+                            const button = form.querySelector('button');
+                            const svg = button.querySelector('svg');
+                            const likeCountSpan = button.querySelector('span');
+
+                            likeCountSpan.textContent = data.likes_count;
+
+                            if (data.liked) {
+                                svg.setAttribute('fill', 'currentColor');
+                                button.classList.add('text-red-500');
+                                button.classList.remove('hover:text-primary');
+                                if (!form.querySelector('input[name="_method"]')) {
+                                    const methodInput = document.createElement('input');
+                                    methodInput.type = 'hidden';
+                                    methodInput.name = '_method';
+                                    methodInput.value = 'DELETE';
+                                    form.appendChild(methodInput);
+                                }
+                            } else {
+                                svg.setAttribute('fill', 'none');
+                                button.classList.remove('text-red-500');
+                                button.classList.add('hover:text-primary');
+                                if (form.querySelector('input[name="_method"]')) {
+                                    form.querySelector('input[name="_method"]').remove();
+                                }
+                            }
+                        }
+
+                        if (form.matches('.follow-form')) {
+                            const button = form.querySelector('button');
+
+                            if (data.following) {
+                                button.textContent = 'Mengikuti';
+                                button.classList.remove('bg-primary', 'hover:opacity-90');
+                                button.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                                if (!form.querySelector('input[name="_method"]')) {
+                                    const methodInput = document.createElement('input');
+                                    methodInput.type = 'hidden';
+                                    methodInput.name = '_method';
+                                    methodInput.value = 'DELETE';
+                                    form.appendChild(methodInput);
+                                }
+                            } else {
+                                button.textContent = 'Ikuti';
+                                button.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+                                button.classList.add('bg-primary', 'hover:opacity-90');
+                                if (form.querySelector('input[name="_method"]')) {
+                                    form.querySelector('input[name="_method"]').remove();
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('There has been a problem with your fetch operation:', error);
+                    });
+                }
+            });
         });
     </script>
 </x-app-layout>

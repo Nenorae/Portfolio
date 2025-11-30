@@ -61,9 +61,13 @@
             @endif
             @endforeach
 
-            <a href="#" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all group hover:bg-white/10">
+            <a href="{{ route('profile.show', ['username' => Auth::user()->username]) }}" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all group hover:bg-white/10">
                 <div class="w-7 h-7 rounded-full bg-gray-600 overflow-hidden border border-transparent group-hover:border-white transition-all">
-                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=random&color=fff" class="w-full h-full object-cover">
+                    @if(Auth::user()->profile_photo)
+                        <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                    @else
+                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=random&color=fff" class="w-full h-full object-cover">
+                    @endif
                 </div>
                 <span class="hidden xl:block font-medium text-white">Profil</span>
             </a>

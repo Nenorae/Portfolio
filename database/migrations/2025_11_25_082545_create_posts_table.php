@@ -19,11 +19,13 @@ return new class extends Migration
             $table->string('image')->nullable(); // Path gambar
             $table->string('github_link')->nullable(); // Link ke GitHub
             $table->string('demo_link')->nullable(); // Link demo/portfolio
+            $table->string('category')->nullable(); // Contoh: "IoT", "Web App"
             $table->integer('likes_count')->default(0);
             $table->timestamps();
             
             $table->index('user_id');
             $table->index('created_at');
+            $table->index('category'); // Agar filter kategori cepat
         });
     }
 

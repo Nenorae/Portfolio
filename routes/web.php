@@ -4,12 +4,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SearchController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+require __DIR__ . '/auth.php';
+
 
 // Halaman Depan (Landing Page) - Dari kode atas
 Route::get('/', function () {
@@ -37,6 +42,14 @@ Route::middleware('auth')->group(function () {
     Route::view('/skills', 'skills.index')->name('skills.index');
     Route::view('/skills/create', 'skills.create')->name('skills.create');
     Route::view('/skills/{id}/edit', 'skills.edit')->name('skills.edit');
+
+    Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.users');
+
+    Route::get('/notifications/json', [NotificationController::class, 'getJsonNotifications'])->name('notifications.json');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+
+    Route::get('/{username}', [PublicProfileController::class, 'show'])->name('profile.show');
+
 });
 
 // Public Profile Dynamic Route (Bisa diakses tanpa login)
@@ -44,4 +57,3 @@ Route::get('/u/{username}', [PublicProfileController::class, 'show'])->name('pub
 
 // Mengambil route auth bawaan (Login, Register, Logout)
 // Ini menggantikan route manual login/logout/register yang ada di kode bawah
-require __DIR__ . '/auth.php';

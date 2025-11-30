@@ -24,6 +24,33 @@
             @endphp
 
             @foreach($menus as $menu)
+            @if($menu['label'] === 'Cari')
+            <div @click="searchOpen = !searchOpen"
+                class="cursor-pointer flex items-center gap-4 px-3 py-3 rounded-xl transition-all group hover:bg-white/10"
+                :class="searchOpen ? 'border border-white/20' : ''"> <svg class="w-7 h-7 text-white group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $menu['icon'] }}" />
+                </svg>
+                <span class="hidden xl:block font-medium text-white">{{ $menu['label'] }}</span>
+            </div>
+
+            {{-- LOGIKA UNTUK TOMBOL NOTIFIKASI (BARU) --}}
+            @elseif($menu['label'] === 'Notifikasi')
+            <div @click="notificationOpen = !notificationOpen; searchOpen = false"
+                class="cursor-pointer flex items-center gap-4 px-3 py-3 rounded-xl transition-all group hover:bg-white/10"
+                :class="notificationOpen ? 'border border-white/20' : ''">
+
+                <div class="relative">
+                    <svg class="w-7 h-7 text-white group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $menu['icon'] }}" />
+                    </svg>
+                    @if(Auth::user()->unreadNotifications->count() > 0)
+                    <div class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black"></div>
+                    @endif
+                </div>
+                <span class="hidden xl:block font-medium text-white">{{ $menu['label'] }}</span>
+            </div>
+
+            @else
             <a href="{{ $menu['route'] == '#' ? '#' : route($menu['route']) }}"
                 class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all group hover:bg-white/10">
                 <svg class="w-7 h-7 text-white group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -31,6 +58,7 @@
                 </svg>
                 <span class="hidden xl:block font-medium text-white">{{ $menu['label'] }}</span>
             </a>
+            @endif
             @endforeach
 
             <a href="#" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all group hover:bg-white/10">

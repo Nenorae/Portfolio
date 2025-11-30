@@ -41,7 +41,7 @@
     </style>
 </head>
 
-<body class="font-sans antialiased bg-black text-white">
+<body class="font-sans antialiased bg-black text-white" x-data="{ searchOpen: false, notificationOpen: false }">
 
     <div class="flex min-h-screen">
 
@@ -51,6 +51,10 @@
             </div>
         </div>
 
+        <!-- Search Drawer Component -->
+        <x-search-drawer />
+
+        <x-notification-drawer />
         <div class="block md:hidden fixed top-0 w-full z-50 bg-black border-b border-[#262626]">
             @include('layouts.navigation')
         </div>

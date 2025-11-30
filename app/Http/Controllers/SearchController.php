@@ -7,48 +7,41 @@ use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
-    // index(Request $request) GET: Search user
-    public function index(Request $request)
-    {
-        $query = $request->input('q');
+    // ... method index biarkan saja ...
 
-        $users = [];
-        if ($query) {
-            // Search user berdasarkan username atau nama lengkap
-            $users = User::where('username', 'like', "%{$query}%")
-                         ->orWhere('name', 'like', "%{$query}%")
-                         ->get();
-        }
-
-        // Menampilkan hasil pencarian
-        return view('search.index', compact('users', 'query'));
-    }
-
-    // suggestions(Request $request) GET: Autocomplete suggestions (opsional)
+    // Method ini yang dipakai oleh Search Drawer (Alpine.js)
     public function suggestions(Request $request)
     {
         $query = $request->input('q');
-        
+
         if (!$query) {
             return response()->json([]);
         }
 
+        // Cari user
         $users = User::where('username', 'like', "%{$query}%")
-                     ->orWhere('name', 'like', "%{$query}%")
-                     ->limit(5)
-                     ->get(['id', 'name', 'username', 'avatar']);
+            ->orWhere('name', 'like', "%{$query}%")
+            ->limit(10) // Limit 10 biar ringan
+            ->get();
 
-        return response()->json($users);
+        // KITA FORMAT ULANG DATANYA AGAR FRONTEND TIDAK PUSING
+        $formattedUsers = $users->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                // Pastikan username ada, jika tidak pakai nama tanpa spasi
+                'username' => $user->username ?? strtolower(str_replace(' ', '', $user->name)),
+
+                // Logika Avatar: Jika user punya avatar di DB, pakai itu. Jika tidak, pakai UI Avatars.
+                'avatar' => $user->avatar
+                    ? asset('storage/' . $user->avatar)
+                    : "https://ui-avatars.com/api/?name={$user->name}&background=random",
+
+                // Link menuju profil user tersebut
+                'profile_url' => route('profile.show', $user->username), // Gunakan username
+            ];
+        });
+
+        return response()->json($formattedUsers);
     }
 }
-
-
-//
-// Tugas:
-// - Search user berdasarkan username atau nama lengkap
-// - Menampilkan hasil pencarian
-//
-// Methods:
-// - index(Request \$request) GET: Search user
-// - suggestions(Request \$request) GET: Autocomplete suggestions (opsional)
-//

@@ -23,6 +23,7 @@ class User extends Authenticatable
         'major',
         'generation',
         'profile_photo',
+        'category',
     ];
 
     protected $hidden = [

@@ -12,29 +12,40 @@ class PostSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        // AMBIL SEMUA USER ID DARI DATABASE
+        // Ambil semua User ID
         $userIds = DB::table('users')->pluck('id');
 
+        // Daftar Kategori Project Mahasiswa PENS
+        $categories = ['IoT', 'Web Development', 'Mobile App', 'Game Dev', 'Network Sec', 'UI/UX Design'];
+
         foreach ($userIds as $userId) {
-            // Setiap user buat 1-3 postingan
-            $jumlahPost = rand(1, 3);
+            $jumlahPost = rand(1, 4); // 1-4 post per user
 
             for ($j = 0; $j < $jumlahPost; $j++) {
 
-                // Logika Gambar:
-                // Kita pakai picsum.photos dengan 'seed' random agar gambar tidak sama semua.
-                // Format: https://picsum.photos/seed/{random}/lebar/tinggi
-                $randomId = rand(1, 9999);
+                // Pilih kategori random
+                $selectedCategory = $faker->randomElement($categories);
+
+                // Judul yang relevan dengan kategori (Simulasi)
+                $title = "Project " . $selectedCategory . " - " . $faker->words(3, true);
+
+                // Gambar random dari Picsum
+                $randomId = rand(1, 1000);
                 $imageUrl = "https://picsum.photos/seed/{$randomId}/800/600";
 
                 DB::table('posts')->insert([
                     'user_id'     => $userId,
-                    'title'       => $faker->sentence(4),
-                    'caption'     => $faker->paragraph(2), // 2 paragraf biar agak panjang
-                    'image'       => $imageUrl, // <-- INI YANG DITAMBAHKAN
-                    'github_link' => 'https://github.com/' . $faker->userName,
-                    'likes_count' => rand(10, 500), // Random likes biar terlihat hidup
-                    'created_at'  => $faker->dateTimeBetween('-3 month', 'now'),
+                    'title'       => ucwords($title),
+                    'caption'     => $faker->paragraph(3), // Deskripsi agak panjang ala LinkedIn
+                    'image'       => $imageUrl,
+
+                    // Isi Data Portofolio
+                    'category'    => $selectedCategory,
+                    'github_link' => 'https://github.com/' . $faker->userName . '/project-' . $j,
+                    'demo_link'   => ($j % 2 == 0) ? 'https://demo-project.com/view/' . $j : null, // 50% chance ada demo link
+
+                    'likes_count' => rand(5, 100),
+                    'created_at'  => $faker->dateTimeBetween('-6 months', 'now'),
                     'updated_at'  => now(),
                 ]);
             }

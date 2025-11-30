@@ -9,13 +9,20 @@ class PublicProfileController extends Controller
 {
     public function show($username)
     {
-        // Logic sesuai persis dengan gambar yang kamu kirim
-        $user = User::with(['skills', 'portfolios'])
-                    ->where('username', $username)
-                    ->firstOrFail();
+        // Gunakan withCount untuk efisiensi query
+        $user = User::where('username', $username)
+            ->withCount(['posts', 'followers', 'following'])
+            ->firstOrFail();
 
-        return view('public.profile', [
-            'user' => $user
+        // Ambil data postingan terpisah
+        $posts = $user->posts()->latest()->get();
+
+        return view('profile.show', [
+            'user'           => $user,
+            'posts'          => $posts,
+            'postsCount'     => $user->posts_count,
+            'followersCount' => $user->followers_count,
+            'followingCount' => $user->following_count,
         ]);
     }
 }

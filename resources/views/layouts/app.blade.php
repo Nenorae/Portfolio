@@ -14,6 +14,22 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        /* 1. Target HTML & Body agar scrollbar browser hilang */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Untuk Firefox/IE/Edge pada HTML & Body */
+        html,
+        body {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        /* 2. Utility Class .no-scrollbar (Untuk elemen internal seperti Sidebar) */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -26,6 +42,7 @@
 </head>
 
 <body class="font-sans antialiased bg-black text-white">
+
     <div class="flex min-h-screen">
 
         <div class="hidden md:block w-[72px] xl:w-[245px] border-r border-[#262626] relative flex-shrink-0">

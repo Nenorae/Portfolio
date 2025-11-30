@@ -13,7 +13,7 @@ class DashboardController extends Controller
     {
         // 1. Ambil semua Postingan (Urutkan dari yang terbaru)
         // 'with("user")' berguna agar query ringan (Eager Loading)
-        $posts = Post::with('user')->latest()->get();
+        $posts = Post::with('user')->latest()->paginate(5);
 
         // 2. Ambil Rekomendasi Teman (User lain selain kita)
         // Ambil 5 user secara acak

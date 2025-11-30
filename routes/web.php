@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,10 +17,7 @@ Route::get('/', function () {
 });
 
 // Dashboard - Menggunakan prioritas kode atas (dengan middleware verified)
-Route::get('/dashboard', function () {
-    // Catatan: Pastikan nama file view-nya 'dashboard' atau 'dashboard.index' sesuai folder kamu
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 // Grup Auth (Hanya bisa diakses jika sudah login)
 Route::middleware('auth')->group(function () {

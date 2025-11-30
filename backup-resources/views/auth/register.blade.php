@@ -80,36 +80,19 @@
                     @enderror
                 </div>
 
-                <!-- Username -->
+                <!-- Nomor Mahasiswa (Custom Field) -->
                 <div>
-                    <label for="username" class="block font-medium text-sm text-white/80 mb-2">
-                        {{ __('Username') }}
+                    <label for="nomor_mahasiswa" class="block font-medium text-sm text-white/80 mb-2">
+                        {{ __('Nomor Mahasiswa') }}
                     </label>
-                    <input id="username"
+                    <input id="nomor_mahasiswa"
                         class="block w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/30 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                         type="text"
-                        name="username"
-                        value="{{ old('username') }}"
-                        required autocomplete="username"
-                        placeholder="Username unik, cth: john_doe" />
-                    @error('username')
-                    <span class="text-red-400 text-sm mt-2 block">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- NIM (Custom Field) -->
-                <div>
-                    <label for="nim" class="block font-medium text-sm text-white/80 mb-2">
-                        {{ __('NIM') }}
-                    </label>
-                    <input id="nim"
-                        class="block w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/30 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                        type="text"
-                        name="nim"
-                        value="{{ old('nim') }}"
+                        name="nomor_mahasiswa"
+                        value="{{ old('nomor_mahasiswa') }}"
                         required autocomplete="off"
                         placeholder="Contoh: 12345678" />
-                    @error('nim')
+                    @error('nomor_mahasiswa')
                     <span class="text-red-400 text-sm mt-2 block">{{ $message }}</span>
                     @enderror
                 </div>

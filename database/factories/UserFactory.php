@@ -30,6 +30,12 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+
+            // === PENAMBAHAN UNTUK DATA PROFIL DUMMY ===
+            'username' => fake()->unique()->userName(),
+            'bio' => fake()->sentence(15), // Dibuat lebih panjang dari 10 biar variatif
+            'website' => fake()->optional(0.6)->url(), // 60% kemungkinan punya website
+            'profile_photo' => null, // Akan di-handle oleh Avatar UI
         ];
     }
 

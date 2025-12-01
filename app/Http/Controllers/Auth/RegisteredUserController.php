@@ -30,19 +30,21 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            // TAMBAHAN: Validasi username agar fitur Profile jalan
-            'username' => ['required', 'string', 'max:255', 'unique:'.User::class, 'alpha_dash'], 
+            // Sesuaikan nama input dengan yang ada di Form Register temanmu
+            // Jika form pakai name="full_name", ganti 'name' dibawah jadi 'full_name'
+            'name' => ['required', 'string', 'max:255'], 
+            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
+            'nim' => ['required', 'string', 'max:20', 'unique:'.User::class], // <--- VALIDASI NIM
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'nim' => ['required', 'string', 'max:255', 'unique:'.User::class], // Ini custom field mu, saya pertahankan
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'full_name' => $request->name,
-            'username' => $request->username, // TAMBAHAN: Simpan username
+            // KIRI: Nama Kolom Database | KANAN: Nama Input dari Form
+            'name' => $request->name,        
+            'username' => $request->username,
+            'nim' => $request->nim,          // <--- SIMPAN NIM
             'email' => $request->email,
-            'nim' => $request->nim, // Custom field mu
             'password' => Hash::make($request->password),
         ]);
 

@@ -12,17 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Penerima notifikasi
-            $table->foreignId('actor_id')->constrained('users')->onDelete('cascade'); // Yang melakukan aksi
-            $table->enum('type', ['follow', 'like']); // Tipe notifikasi
-            $table->foreignId('post_id')->nullable()->constrained()->onDelete('cascade'); // Jika tipe = like
-            $table->boolean('is_read')->default(false);
+            $table->uuid('id')->primary(); // Wajib UUID
+            $table->string('type');        // Wajib String (JANGAN ENUM)
+            $table->morphs('notifiable');  // Ini otomatis bikin notifiable_id & type
+            $table->text('data');          // Wajib text buat nyimpen JSON
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
-            
-            $table->index('user_id');
-            $table->index('is_read');
-            $table->index('created_at');
         });
     }
 

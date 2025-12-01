@@ -13,26 +13,35 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique();
+            $table->string('name'); // Nama Lengkap
+            
+            // --- KOLOM TAMBAHAN WAJIB ---
+            $table->string('username')->unique()->nullable();
+            $table->string('nim')->unique()->nullable(); // <--- INI WAJIB ADA BIAR GAK ERROR
+            // ----------------------------
+
             $table->string('email')->unique();
-            $table->string('password');
-            $table->string('nim')->unique(); // Nomor Induk Mahasiswa
-            $table->string('full_name');
-            $table->text('bio')->nullable();
-            $table->string('profile_photo')->nullable();
-            $table->string('location')->nullable();
-            $table->string('website')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            
+            // --- KOLOM PROFIL ---
+            $table->string('profile_photo')->nullable();
+            $table->text('bio')->nullable();
+            $table->string('website')->nullable();
+            // --------------------
+            
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Tabel Reset Password (Bawaan)
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // Tabel Sessions (Bawaan)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();

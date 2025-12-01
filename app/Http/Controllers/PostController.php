@@ -3,30 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
-use App\Models\Post; // Pastikan file request ini ada
-// Pastikan file request ini ada
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    // index() GET: Feed/timeline (posts dari user yang di-follow)
-    public function index()
+    /**
+     * index() GET: Menampilkan SEMUA karya (gallery explore)
+     * Mendukung Infinite Scroll melalui pengecekan AJAX.
+     */
+    public function index(Request $request)
     {
-        // Ambil ID user yang diikuti oleh user yang sedang login
-        $followingIds = Auth::user()->following()->pluck('users.id');
+        // Ambil data dengan pagination
+        $posts = Post::withUser()           
+                    ->withLikesCount()      
+                    ->latest()              
+                    ->paginate(12);
 
-        // Tampilkan post dari user yang diikuti DAN post sendiri
-        $posts = Post::whereIn('user_id', $followingIds)
-            ->orWhere('user_id', Auth::id())
-            ->with('user') // Eager load user data
-            ->latest()
-            ->paginate(10);
-
+        // Jika permintaan adalah AJAX, kembalikan hanya partial card untuk Infinite Scroll
+        if ($request->ajax()) {
+            return view('posts._post-cards', compact('posts'))->render();
+        }
+        
+        // Jika permintaan normal, kembalikan view penuh
         return view('posts.index', compact('posts'));
     }
 
+    /**
+     * feed() GET: Menampilkan timeline/feed (post dari user yang di-follow)
+     * Mendukung Infinite Scroll melalui pengecekan AJAX.
+     */
+    public function feed(Request $request)
+    {
+        // Ambil data dengan pagination
+        $posts = Post::fromFollowing(auth()->id()) 
+                    ->withUser()
+                    ->withLikesCount()
+                    ->latest()
+                    ->paginate(12);
+        
+        // Jika permintaan adalah AJAX, kembalikan hanya partial card untuk Infinite Scroll
+        if ($request->ajax()) {
+            // Catatan: Anda mungkin perlu membuat partial terpisah seperti '_feed-cards.blade.php' 
+            // jika tampilan feed berbeda dengan explore, namun untuk kemudahan, 
+            // kita asumsikan menggunakan partial yang sama untuk saat ini.
+            return view('posts._post-cards', compact('posts'))->render();
+        }
+
+        return view('posts.feed', compact('posts'));
+    }
+  
     // create() GET: Form buat post baru
     public function create()
     {
@@ -47,19 +75,29 @@ class PostController extends Controller
 
         Post::create($validated);
 
-        return redirect()->route('posts.index')->with('success', 'Post created successfully!');
+        return redirect()->route('posts.index')->with('success', 'Karya berhasil diupload!');
     }
 
     // show(Post $post) GET: Detail post
     public function show(Post $post)
     {
-        return view('profile.posts', compact('post'));
+        // Memuat relasi user dan likes count untuk detail
+        // Karena $post sudah berupa instance model, kita tidak bisa chaining scopes.
+        // Kita buat query baru menggunakan ID post yang sudah ter-resolve, lalu terapkan scopes.
+        $post = Post::where('id', $post->id)
+                    ->withUser()
+                    ->withLikesCount()
+                    ->first();
+        
+        // Catatan: Pastikan scopes withUser() dan withLikesCount() didefinisikan 
+        // dengan benar di model Post.
+
+        return view('posts.show', compact('post'));
     }
 
     // edit(Post $post) GET: Form edit post
     public function edit(Post $post)
     {
-        // Pastikan hanya pemilik yang bisa edit
         if ($post->user_id !== Auth::id()) {
             abort(403);
         }
@@ -75,12 +113,13 @@ class PostController extends Controller
         }
 
         $validated = $request->validate([
-            'content' => 'required|string',
+            'title' => 'required|string|max:255',
+            'caption' => 'required|string',
+            'github_link' => 'nullable|url',
             'image' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
             if ($post->image) {
                 Storage::disk('public')->delete($post->image);
             }
@@ -89,7 +128,7 @@ class PostController extends Controller
 
         $post->update($validated);
 
-        return redirect()->route('posts.show', $post)->with('success', 'Post updated!');
+        return redirect()->route('posts.show', $post)->with('success', 'Karya berhasil diupdate!');
     }
 
     // destroy(Post $post) DELETE: Hapus post
@@ -105,7 +144,38 @@ class PostController extends Controller
 
         $post->delete();
 
-        return redirect()->route('posts.index')->with('success', 'Post deleted!');
+        return redirect()->route('posts.index')->with('success', 'Karya berhasil dihapus!');
+    }
+
+    // ... method lainnya ...
+
+    // LOGIKA LIKE (DIPERBAIKI)
+    public function like(Post $post)
+    {
+        // Cek duplikasi biar gak bisa like 2x
+        $existingLike = $post->likes()->where('user_id', Auth::id())->first();
+
+        if (!$existingLike) {
+            $post->likes()->create([
+                'user_id' => Auth::id()
+            ]);
+        }
+
+        return response()->json([
+            'liked' => true,
+            'likes_count' => $post->likes()->count()
+        ]);
+    }
+
+    // LOGIKA UNLIKE (DIPERBAIKI)
+    public function unlike(Post $post)
+    {
+        $post->likes()->where('user_id', Auth::id())->delete();
+
+        return response()->json([
+            'liked' => false,
+            'likes_count' => $post->likes()->count()
+        ]);
     }
 }
 

@@ -1,3 +1,34 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ======================================================== */
+/* FINAL SOLUTION: OVERRIDE GLOBAL TEXT INHERITANCE BUG */
+/* ======================================================== */
+
+/* Target semua elemen teks yang menghilang saat Light Mode */
+/* Ini akan mengalahkan semua aturan text-gray-400 yang hardcode */
+html:not(.dark) a,
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) p,
+html:not(.dark) span,
+html:not(.dark) div.text-sm {
+    /* Menggunakan warna dark gray/black (#1f2937) untuk kontras tinggi */
+    color: #1f2937 !important; 
+}
+
+/* Memastikan ikon (SVG) yang berada di footer juga menjadi gelap */
+html:not(.dark) svg {
+    color: #4b5563 !important; /* Agar ikon terlihat gelap */
+}
+
+/* Fix untuk Warna Placeholder Input agar tidak menyatu (jika masih ada) */
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+    color: #4b5563 !important; /* Force Text-gray-600 */
+}
+html:not(.dark) .btn-fix-text {
+    color: #ffffff !important;
+}

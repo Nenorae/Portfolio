@@ -9,6 +9,9 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    // TAMBAHKAN BARIS INI
+    darkMode: 'class',
+
     theme: {
         extend: {
             fontFamily: {

@@ -2,37 +2,51 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class FollowSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ambil User ID lagi
-        $userIds = DB::table('users')->pluck('id');
+        // Ambil semua User (Kita butuh Model untuk fungsi attach() biar aman)
+        $users = User::all();
 
-        foreach ($userIds as $followerId) {
-            // Random pick user lain
-            $targets = $userIds->reject(fn($id) => $id == $followerId)->random(rand(2, 5));
+        if ($users->count() < 2) {
+            return;
+        }
+
+        foreach ($users as $follower) {
+            // Random pick 2-5 user lain untuk difollow (kecuali diri sendiri)
+            $targets = $users->reject(fn($u) => $u->id === $follower->id)
+                             ->random(min(rand(2, 5), $users->count() - 1));
             
-            foreach ($targets as $followingId) {
-                // Insert Follow
-                DB::table('follows')->insertOrIgnore([
-                    'follower_id'  => $followerId,
-                    'following_id' => $followingId,
-                    'created_at'   => now(),
-                    'updated_at'   => now(),
-                ]);
+            foreach ($targets as $following) {
+                // 1. Insert Follow (Pakai Eloquent biar nama tabel pivot otomatis benar)
+                try {
+                    // syncWithoutDetaching mencegah error duplicate entry
+                    $follower->following()->syncWithoutDetaching([$following->id]);
+                } catch (\Exception $e) {
+                    continue; // Skip jika ada masalah
+                }
 
-                // Langsung Insert Notifikasi
+                // 2. Insert Notifikasi (SESUAIKAN DENGAN STRUKTUR BARU)
+                // Kita pakai DB::table manual biar cepat, tapi formatnya harus benar (UUID)
                 DB::table('notifications')->insert([
-                    'user_id'    => $followingId, // Penerima
-                    'actor_id'   => $followerId,  // Pelaku
-                    'type'       => 'follow',
-                    'is_read'    => false,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'id'              => Str::uuid()->toString(),         // Wajib UUID
+                    'type'            => 'App\Notifications\NewFollower', // Class Name
+                    'notifiable_type' => 'App\Models\User',               // Polymorphic Type
+                    'notifiable_id'   => $following->id,                  // ID Penerima (User yg difollow)
+                    'data'            => json_encode([                    // Data masuk ke JSON
+                        'actor_id'   => $follower->id,
+                        'actor_name' => $follower->name,
+                        'message'    => $follower->name . ' mulai mengikuti Anda.',
+                    ]),
+                    'read_at'         => null,
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
                 ]);
             }
         }

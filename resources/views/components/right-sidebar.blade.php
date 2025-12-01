@@ -1,44 +1,51 @@
-<div class="text-white">
-    <div class="bg-[#262626] rounded-lg px-4 py-2 mb-6 flex items-center gap-3 border border-transparent focus-within:border-gray-500 transition-all">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" placeholder="Cari" class="bg-transparent border-none text-sm text-white focus:ring-0 w-full p-0 placeholder-gray-400">
+<div class="flex flex-col h-[calc(100vh-120px)] justify-between sticky top-24">
+    
+    {{-- 1. BAGIAN ATAS: VISUAL VIDEO (VERTIKAL MEMANJANG) --}}
+    <div class="w-full flex-1 bg-white dark:bg-[#121212] rounded-2xl border border-gray-200 dark:border-[#262626] shadow-sm overflow-hidden relative group">
+        
+        {{-- VIDEO BACKGROUND (FULL COVER) --}}
+        <div class="absolute inset-0 w-full h-full bg-gray-50 dark:bg-[#0a0a0a]">
+            
+            {{-- VIDEO TAG HTML5 --}}
+            {{-- Pastikan file video ada di public/videos/sidebar.mp4 --}}
+            <video 
+                autoplay 
+                loop 
+                muted 
+                playsinline 
+                class="absolute inset-0 w-full h-full object-cover"
+                poster="https://ui-avatars.com/api/?name=Video&background=0D8ABC&color=fff" {{-- Fallback image --}}
+            >
+                {{-- Ganti 'videos/sidebar.mp4' dengan path/nama file video kamu --}}
+                <source src="{{ asset('videos/sidebar.mp4') }}" type="video/mp4">
+                Browser Anda tidak mendukung tag video.
+            </video>
+            
+            {{-- Overlay Gradient Hitam di Bawah (Supaya teks terbaca jelas) --}}
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+        </div>
+
+        {{-- KONTEN TEKS & TOMBOL (Posisi di Bawah/Bottom) --}}
+        <div class="absolute bottom-0 left-0 w-full p-6 text-center z-10">
+            <h3 class="text-xl font-bold text-white mb-2 drop-shadow-md">
+                Mulai Berkarya! 🚀
+            </h3>
+            {{-- DIUBAH MENJADI TEXT-WHITE UNTUK VISIBILITAS MAKSIMAL --}}
+            <p class="text-xs text-white mb-5 leading-relaxed drop-shadow-sm opacity-90">
+                Jangan biarkan idemu hilang begitu saja. Abadikan sekarang di MahaKarya.
+            </p>
+
+            {{-- TOMBOL: Dibuat SELALU JELAS dengan bg-white --}}
+            <a href="{{ route('posts.create') }}" class="block w-full py-3 rounded-xl bg-white text-gray-900 font-bold text-sm hover:bg-gray-100 transition-colors shadow-lg transform hover:-translate-y-1 duration-300">
+                Upload Karyamu
+            </a>
+        </div>
     </div>
 
-    <div class="mb-4">
-        <div class="flex justify-between items-center mb-4 px-1">
-            <h3 class="font-bold text-gray-400 text-sm">Kreator Trending</h3>
-            <button class="text-white text-xs font-bold">Lihat Semua</button>
+    {{-- 2. BAGIAN BAWAH: FOOTER (Copyright & Links) --}}
+    <div class="mt-4 px-2"> 
+        <div class="text-[10px] text-white-300 dark:text-white-600 text-center font-medium">
+            &copy; 2025 ✦ MAHAKARYA INDONESIA
         </div>
-
-        <div class="space-y-4">
-            @foreach(range(1, 3) as $i)
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br {{ $i==1 ? 'from-purple-500 to-indigo-500' : ($i==2 ? 'from-pink-500 to-rose-500' : 'from-yellow-400 to-orange-500') }}"></div>
-                    <div class="leading-tight">
-                        <p class="font-bold text-sm hover:underline cursor-pointer text-white">
-                            {{ $i==1 ? 'Komunitas IT' : ($i==2 ? 'DesignHub ID' : 'Startup Kampus') }}
-                        </p>
-                        <p class="text-xs text-gray-400">@ {{ $i==1 ? 'komunitas_it' : ($i==2 ? 'designhub' : 'startup_kmp') }}</p>
-                    </div>
-                </div>
-                <button class="text-blue-400 text-xs font-bold hover:text-white transition-colors">Ikuti</button>
-            </div>
-            @endforeach
-        </div>
-    </div>
-
-    <div class="mt-8 text-xs text-gray-500 space-y-4 px-1">
-        <div class="flex flex-wrap gap-x-1 gap-y-1">
-            <a href="#" class="hover:underline">Tentang</a> &bull;
-            <a href="#" class="hover:underline">Bantuan</a> &bull;
-            <a href="#" class="hover:underline">Pers</a> &bull;
-            <a href="#" class="hover:underline">API</a> &bull;
-            <a href="#" class="hover:underline">Karir</a> &bull;
-            <a href="#" class="hover:underline">Privasi</a>
-        </div>
-        <p>© 2024 MAHAKARYA INDONESIA</p>
     </div>
 </div>

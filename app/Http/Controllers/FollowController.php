@@ -12,26 +12,27 @@ class FollowController extends Controller
     // store(User $user) POST: Follow user
     public function store(User $user)
     {
-        if (Auth::id() === $user->id) {
-            if (request()->wantsJson()) {
-                return response()->json(['error' => 'You cannot follow yourself.'], 422);
-            }
-            return back()->with('error', 'You cannot follow yourself.');
+        // Simpan hasil sync ke variabel
+        $result = Auth::user()->following()->syncWithoutDetaching([$user->id]);
+
+        // Cek array 'attached'. 
+        // Jika ada isinya, berarti ini adalah FOLLOW BARU.
+        // Jika kosong, berarti user sudah follow sebelumnya (cuma iseng klik lagi).
+        if (!empty($result['attached'])) {
+            // HANYA kirim notifikasi jika ini follow baru
+            $user->notify(new NewFollower(Auth::user()));
         }
 
-        // Attach relationship (Follow)
-        Auth::user()->following()->syncWithoutDetaching([$user->id]);
-
-        // Kirim notifikasi saat follow
-        $user->notify(new NewFollower(Auth::user()));
-        // (Pastikan Class Notification dibuat agar baris di atas bisa jalan)
+        // Respon JSON untuk AJAX
         if (request()->wantsJson()) {
             return response()->json([
                 'following' => true,
+                // Update jumlah follower real-time
+                'followers_count' => $user->followers()->count() 
             ]);
         }
 
-        return back()->with('success', 'You are now following ' . $user->name);
+        return back();
     }
 
     // destroy(User $user) DELETE: Unfollow user

@@ -1,146 +1,69 @@
-<!DOCTYPE html>
-<html lang="id">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MahaKarya</title>
-
-    <!-- Menggunakan CDN Tailwind untuk memastikan style berjalan sesuai contoh landing page -->
-    <!-- Di production, sebaiknya gunakan Vite/Mix compile asset kamu -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#667eea',
-                        secondary: '#764ba2',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .gradient-text {
-            background: linear-gradient(135deg, #fff 0%, #667eea 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Animasi smooth untuk input autofill browser agar tidak merusak tema gelap */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #1a1a2e inset !important;
-            -webkit-text-fill-color: white !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
-    </style>
-</head>
-
-<body class="bg-black text-white font-sans antialiased">
-
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-b from-[#1a1a2e] to-black px-4">
-
-        <!-- Logo / Header -->
-        <div class="mb-8 text-center">
-            <a href="/" class="text-4xl font-extrabold gradient-text inline-block hover:scale-105 transition-transform duration-300">
-                MahaKarya
-            </a>
-            <p class="mt-2 text-white/50 text-sm">Welcome back, Creator!</p>
+<x-guest-layout>
+    <div class="min-h-screen flex items-center justify-center bg-white dark:bg-black p-6 relative overflow-hidden transition-colors duration-500">
+        
+        {{-- Background Glow Effect (Dark Mode Only) --}}
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-500">
+            <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse"></div>
         </div>
 
-        <!-- Glassmorphism Card -->
-        <div class="w-full sm:max-w-md px-8 py-10 bg-white/5 border border-white/10 shadow-2xl backdrop-blur-xl rounded-2xl sm:rounded-3xl relative overflow-hidden">
-
-            <!-- Dekorasi Background Blobs -->
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/20 rounded-full blur-3xl pointer-events-none"></div>
-
-            <!-- Session Status -->
-            @if (session('status'))
-            <div class="mb-4 font-medium text-sm text-green-400">
-                {{ session('status') }}
+        {{-- Card Login Minimalis --}}
+        <div class="w-full max-w-md bg-white dark:bg-white/10 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-3xl p-8 shadow-2xl relative z-10 transition-all duration-300">
+            
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">MahaKarya</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">Selamat datang kembali, Kreator!</p>
             </div>
-            @endif
 
-            <form method="POST" action="{{ route('login') }}" class="relative z-10">
+            <x-auth-session-status class="mb-4" :status="session('status')" />
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-5">
                 @csrf
 
-                <!-- Email Address -->
+                {{-- Email Address --}}
                 <div>
-                    <label for="email" class="block font-medium text-sm text-white/80 mb-2">
-                        {{ __('Email') }}
-                    </label>
-                    <input id="email"
-                        class="block w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/30 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required autofocus autocomplete="username"
-                        placeholder="nama@kampus.ac.id" />
-                    @error('email')
-                    <span class="text-red-400 text-sm mt-2 block">{{ $message }}</span>
-                    @enderror
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Email</label>
+                    <input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username"
+                        class="w-full bg-gray-50 dark:bg-black/30 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white rounded-xl px-4 py-3 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="nama@kampus.ac.id">
+                    <x-input-error :messages="$errors->get('email')" class="mt-1" />
                 </div>
 
-                <!-- Password -->
-                <div class="mt-5">
-                    <label for="password" class="block font-medium text-sm text-white/80 mb-2">
-                        {{ __('Password') }}
-                    </label>
-                    <input id="password"
-                        class="block w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/30 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                        type="password"
-                        name="password"
-                        required autocomplete="current-password"
-                        placeholder="••••••••" />
-                    @error('password')
-                    <span class="text-red-400 text-sm mt-2 block">{{ $message }}</span>
-                    @enderror
+                {{-- Password --}}
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Password</label>
+                    <input id="password" type="password" name="password" required autocomplete="current-password"
+                        class="w-full bg-gray-50 dark:bg-black/30 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white rounded-xl px-4 py-3 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="••••••••">
+                    <x-input-error :messages="$errors->get('password')" class="mt-1" />
                 </div>
 
-                <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between mt-6">
-                    <label for="remember_me" class="inline-flex items-center cursor-pointer group">
-                        <input id="remember_me" type="checkbox" class="rounded border-white/20 bg-white/5 text-primary shadow-sm focus:ring-primary focus:ring-offset-black" name="remember">
-                        <span class="ms-2 text-sm text-white/60 group-hover:text-white/80 transition-colors">{{ __('Remember me') }}</span>
+                {{-- Remember Me & Forgot Password --}}
+                <div class="flex items-center justify-between text-sm">
+                    <label for="remember_me" class="inline-flex items-center">
+                        <input id="remember_me" type="checkbox" class="rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500 dark:bg-gray-900 dark:focus:ring-offset-gray-800" name="remember">
+                        <span class="ms-2 text-gray-600 dark:text-gray-400">Ingat saya</span>
                     </label>
 
                     @if (Route::has('password.request'))
-                    <a class="text-sm text-primary hover:text-white transition-colors hover:underline" href="{{ route('password.request') }}">
-                        {{ __('Forgot password?') }}
-                    </a>
+                        <a class="text-blue-600 dark:text-blue-400 hover:underline font-medium" href="{{ route('password.request') }}">
+                            Lupa password?
+                        </a>
                     @endif
                 </div>
 
-                <!-- Login Button -->
-                <div class="mt-8">
-                    <button type="submit" class="w-full justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/40 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-black transition-all duration-200">
-                        {{ __('Log in') }}
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-gray-900 dark:bg-gradient-to-r dark:from-blue-600 dark:to-purple-600 hover:bg-black dark:hover:from-blue-700 dark:hover:to-purple-700 text-white font-bold py-3.5 rounded-xl shadow-lg transform hover:-translate-y-0.5 transition-all">
+                        Log in
                     </button>
                 </div>
 
-                <!-- Register Link -->
-                @if (Route::has('register'))
-                <div class="mt-6 text-center text-sm text-white/50">
-                    {{ __('Don\'t have an account?') }}
-                    <a class="font-semibold text-white hover:text-primary transition-colors ml-1" href="{{ route('register') }}">
-                        {{ __('Register here') }}
-                    </a>
+                <div class="text-center mt-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Belum punya akun? <a href="{{ route('register') }}" class="text-blue-600 dark:text-blue-400 hover:underline font-bold">Register here</a>
+                    </p>
                 </div>
-                @endif
             </form>
         </div>
-
-        <!-- Footer Kecil -->
-        <div class="mt-8 text-white/20 text-xs">
-            &copy; {{ date('Y') }} MahaKarya Platform.
-        </div>
     </div>
-</body>
-
-</html>
+</x-guest-layout>

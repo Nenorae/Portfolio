@@ -20,13 +20,10 @@ class Post extends Model
         'image',
         'github_link',
         'demo_link',
-        // HAPUS 'likes_count' dari fillable - sebaiknya dihitung via relasi
     ];
 
-    // protected $with = ['user']; // Opsional: auto eager load user
-
     /**
-     * User pemilik post.
+     * Get the user that owns the post.
      */
     public function user(): BelongsTo
     {
@@ -34,19 +31,16 @@ class Post extends Model
     }
 
     /**
-     * Likes untuk post ini.
+     * Get the likes for the post.
      */
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class);
     }
-
-    /**
-     * FIX: Method untuk cek apakah user sedang login sudah like post ini.
-     * Lebih aman dengan dependency injection.
-     */
     
-    // Helper: Cek apakah user yang sedang login sudah like post ini?
+    /**
+     * Check if the currently authenticated user has liked this post.
+     */
     public function hasLiked($user)
     {
         if (!$user) return false;
@@ -54,7 +48,7 @@ class Post extends Model
     }
 
     /**
-     * Cek apakah post di-like oleh user tertentu (spesifik ID).
+     * Check if the post is liked by a specific user.
      */
     public function isLikedBy(int $userId): bool
     {
@@ -62,11 +56,10 @@ class Post extends Model
     }
 
     /**
-     * Accessor untuk likes count yang selalu fresh dari database.
+     * Get the number of likes for the post.
      */
     public function getLikesCountAttribute(): int
     {
-        // Jika sudah di-load dengan withCount, gunakan value tersebut
         if (array_key_exists('likes_count', $this->attributes)) {
             return $this->attributes['likes_count'];
         }
@@ -75,7 +68,7 @@ class Post extends Model
     }
 
     /**
-     * Scope untuk mengurutkan post berdasarkan yang terbaru.
+     * Scope a query to order posts by the latest creation date.
      */
     public function scopeLatest(Builder $query): Builder
     {
@@ -83,25 +76,23 @@ class Post extends Model
     }
 
     /**
-     * Scope untuk mendapatkan post dari user yang di-follow.
-     * IMPROVEMENT: Gunakan relationship yang sudah ada
+     * Scope a query to retrieve posts from users the given user is following.
      */
     public function scopeFromFollowing(Builder $query, int $userId): Builder
     {
         $user = User::find($userId);
         
         if (!$user) {
-            return $query->whereNull('user_id'); // Return empty result jika user tidak ditemukan
+            return $query->whereNull('user_id');
         }
 
-        // Ambil ID user yang difollow
         $followingIds = $user->following()->pluck('users.id');
 
         return $query->whereIn('user_id', $followingIds);
     }
 
     /**
-     * Scope untuk posts dengan user relationship (eager load)
+     * Scope a query to eager load the user relationship.
      */
     public function scopeWithUser(Builder $query): Builder
     {
@@ -109,7 +100,7 @@ class Post extends Model
     }
 
     /**
-     * Scope untuk posts dengan likes count
+     * Scope a query to eager load the likes count.
      */
     public function scopeWithLikesCount(Builder $query): Builder
     {
@@ -117,7 +108,7 @@ class Post extends Model
     }
 
     /**
-     * Accessor untuk memastikan image URL selalu proper
+     * Get the image URL for the post.
      */
     public function getImageUrlAttribute(): string
     {
@@ -125,18 +116,17 @@ class Post extends Model
             return asset('storage/' . $this->image);
         }
 
-        // Fallback image jika tidak ada
         return asset('images/default-post.jpg');
     }
 
     /**
-     * Boot method untuk model events
+     * The "booting" method of the model.
      */
     protected static function boot()
     {
         parent::boot();
 
-        // Auto delete related likes ketika post dihapus
+        // Delete related likes when a post is deleted
         static::deleting(function ($post) {
             $post->likes()->delete();
         });

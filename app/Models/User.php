@@ -15,7 +15,7 @@ class User extends Authenticatable
    protected $fillable = [
         'name',
         'username',
-        'nim',           // <--- TAMBAHKAN INI
+        'nim',
         'email',
         'password',
         'profile_photo',
@@ -82,7 +82,6 @@ class User extends Authenticatable
 
     public function follow(User $user): bool
     {
-        // Prevent self-follow
         if ($this->id === $user->id) {
             return false;
         }
@@ -109,19 +108,18 @@ class User extends Authenticatable
             return asset('storage/' . $this->profile_photo);
         }
         
-        // Fallback to default avatar
         return asset('images/default-avatar.png');
     }
 
     public function getInitialsAttribute(): string
     {
-        $names = explode(' ', $this->full_name);
+        $names = explode(' ', $this->name);
         $initials = '';
         
         if (count($names) >= 2) {
             $initials = strtoupper($names[0][0] . $names[1][0]);
         } else {
-            $initials = strtoupper(substr($this->full_name, 0, 2));
+            $initials = strtoupper(substr($this->name, 0, 2));
         }
         
         return $initials;
@@ -169,10 +167,9 @@ class User extends Authenticatable
     {
         parent::boot();
 
-        // Auto-create username if not provided
         static::creating(function ($user) {
             if (empty($user->username)) {
-                $baseUsername = strtolower(str_replace(' ', '', $user->full_name));
+                $baseUsername = strtolower(str_replace(' ', '', $user->name));
                 $username = $baseUsername;
                 $counter = 1;
                 

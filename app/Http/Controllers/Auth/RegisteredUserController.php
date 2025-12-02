@@ -30,20 +30,17 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            // Sesuaikan nama input dengan yang ada di Form Register temanmu
-            // Jika form pakai name="full_name", ganti 'name' dibawah jadi 'full_name'
             'name' => ['required', 'string', 'max:255'], 
             'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
-            'nim' => ['required', 'string', 'max:20', 'unique:'.User::class], // <--- VALIDASI NIM
+            'nim' => ['required', 'string', 'max:20', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            // KIRI: Nama Kolom Database | KANAN: Nama Input dari Form
             'name' => $request->name,        
             'username' => $request->username,
-            'nim' => $request->nim,          // <--- SIMPAN NIM
+            'nim' => $request->nim,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

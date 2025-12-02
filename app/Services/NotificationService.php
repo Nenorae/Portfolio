@@ -5,21 +5,10 @@ namespace App\Services;
 use App\Models\Notification;
 use App\Models\Post;
 
-//
-// Tugas:
-// - Logic untuk membuat notifikasi
-// - Prevent self-notification
-// - Batch create notifications
-//
-// Methods:
-// - notifyFollow(\$followerId, \$followingId) Notifikasi follow
-// - notifyLike(\$userId, \$postId) Notifikasi like
-// - deleteNotification(\$type, \$actorId, \$targetId, \$postId = null) Hapus notifikasi
-//
 class NotificationService
 {
     /**
-     * Buat notifikasi untuk event follow.
+     * Create a notification for a follow event.
      */
     public function notifyFollow(int $followerId, int $followingId): void
     {
@@ -36,13 +25,13 @@ class NotificationService
     }
 
     /**
-     * Buat notifikasi untuk event like.
+     * Create a notification for a like event.
      */
     public function notifyLike(int $userId, int $postId): void
     {
         $post = Post::find($postId);
 
-        // Pastikan post ada dan cegah notifikasi untuk like pada post sendiri
+        // Ensure the post exists and prevent self-notification for liking own post
         if (! $post || $userId === $post->user_id) {
             return;
         }
@@ -56,7 +45,7 @@ class NotificationService
     }
 
     /**
-     * Hapus notifikasi terkait.
+     * Delete an associated notification.
      */
     public function deleteNotification(string $type, int $actorId, int $targetId, ?int $postId = null): void
     {

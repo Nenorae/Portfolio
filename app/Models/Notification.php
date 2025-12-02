@@ -6,20 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-//
-// Tugas:
-// - Mengelola notifikasi follow & like
-// - Scope unread
-//
-// Relasi:
-// - user() belongsTo User (penerima)
-// - actor() belongsTo User (pelaku aksi)
-// - post() belongsTo Post (untuk notifikasi like)
-//
-// Methods:
-// - markAsRead() Tandai sudah dibaca
-// - scopeUnread($query) Filter notifikasi belum dibaca
-//
 class Notification extends Model
 {
     protected $fillable = [
@@ -35,7 +21,7 @@ class Notification extends Model
     ];
 
     /**
-     * User penerima notifikasi.
+     * The user who receives the notification.
      */
     public function user(): BelongsTo
     {
@@ -43,7 +29,7 @@ class Notification extends Model
     }
 
     /**
-     * User yang melakukan aksi (sumber notifikasi).
+     * The user who performed the action that triggered the notification.
      */
     public function actor(): BelongsTo
     {
@@ -51,7 +37,7 @@ class Notification extends Model
     }
 
     /**
-     * Post terkait notifikasi (jika ada).
+     * The post associated with the notification, if any.
      */
     public function post(): BelongsTo
     {
@@ -59,7 +45,7 @@ class Notification extends Model
     }
 
     /**
-     * Tandai notifikasi sebagai sudah dibaca.
+     * Mark the notification as read.
      */
     public function markAsRead(): bool
     {
@@ -67,7 +53,7 @@ class Notification extends Model
     }
 
     /**
-     * Scope untuk memfilter notifikasi yang belum dibaca.
+     * Scope a query to only include unread notifications.
      */
     public function scopeUnread(Builder $query): Builder
     {

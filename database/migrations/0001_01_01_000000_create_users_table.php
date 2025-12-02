@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // Nama Lengkap
             
-            // --- KOLOM TAMBAHAN WAJIB ---
             $table->string('username')->unique()->nullable();
-            $table->string('nim')->unique()->nullable(); // <--- INI WAJIB ADA BIAR GAK ERROR
+            $table->string('nim')->unique()->nullable(); 
             // ----------------------------
 
             $table->string('email')->unique();
@@ -34,14 +33,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Tabel Reset Password (Bawaan)
+        // Tabel Reset Password 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // Tabel Sessions (Bawaan)
+        // Tabel Sessions 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();

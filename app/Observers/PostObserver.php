@@ -5,15 +5,6 @@ namespace App\Observers;
 use App\Models\Post;
 use Illuminate\Support\Facades\Storage;
 
-//
-// Tugas:
-// - Auto-update posts_count di tabel users saat post dibuat/dihapus
-// - Hapus file gambar saat post dihapus
-//
-// Methods:
-// - created(Post \$post) Increment posts_count
-// - deleted(Post \$post) Decrement posts_count & hapus file
-//
 class PostObserver
 {
     /**
@@ -21,7 +12,7 @@ class PostObserver
      */
     public function created(Post $post): void
     {
-        // Increment posts_count pada user
+        // Increment posts_count for the user
         $post->user()->increment('posts_count');
     }
 
@@ -30,10 +21,10 @@ class PostObserver
      */
     public function deleted(Post $post): void
     {
-        // Decrement posts_count pada user
+        // Decrement posts_count for the user
         $post->user()->decrement('posts_count');
 
-        // Hapus file gambar jika ada
+        // Delete the image file if it exists
         if ($post->image) {
             Storage::disk('public')->delete($post->image);
         }

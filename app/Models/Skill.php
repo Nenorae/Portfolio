@@ -10,11 +10,11 @@ class Skill extends Model
     protected $fillable = [
         'user_id',
         'name',
-        'proficiency', // e.g., 'Beginner', 'Intermediate', 'Advanced'
+        'proficiency',
     ];
 
     /**
-     * User pemilik skill.
+     * Get the user that owns the skill.
      */
     public function user(): BelongsTo
     {

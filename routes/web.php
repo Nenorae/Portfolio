@@ -1,16 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-// Import Controllers
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\FollowController; // Pakai ini untuk Follow
-use App\Http\Controllers\LikeController;   // Pakai ini untuk Like
-use App\Http\Controllers\SkillController; // <--- TAMBAHIN INI
+use App\Http\Controllers\FollowController;
+use App\Http\Controllers\LikeController;
+use App\Http\Controllers\SkillController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,19 +19,19 @@ use App\Http\Controllers\SkillController; // <--- TAMBAHIN INI
 
 require __DIR__.'/auth.php';
 
-// --- 1. PUBLIC ROUTES (Bisa diakses tanpa login) ---
+// Public routes (accessible without login)
 Route::get('/', function () {
     return view('landing');
 });
 
-// Gallery / Explore (Daftar Postingan)
+// Gallery / Explore (All Posts)
 Route::get('/karya', [PostController::class, 'index'])->name('posts.index');
 
-// Public Profile (Akses via url/u/username untuk tamu)
+// Public Profile (Access via url/u/username for guests)
 Route::get('/u/{username}', [PublicProfileController::class, 'show'])->name('public.profile');
 
 
-// --- 2. AUTHENTICATED ROUTES (Harus Login) ---
+// Authenticated routes (requires login)
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
@@ -43,16 +42,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // --- FITUR UTAMA ---
-
-    // Posts (CRUD) - Index dipisah di atas (/karya)
+    // Main Features
     Route::resource('posts', PostController::class)->except(['index']);
 
-    // Likes (Menggunakan LikeController yang sudah difix)
+    // Likes
     Route::post('/posts/{post}/like', [LikeController::class, 'store'])->name('posts.like');
     Route::delete('/posts/{post}/unlike', [LikeController::class, 'destroy'])->name('posts.unlike');
 
-    // Follow System (Menggunakan FollowController)
+    // Follow System
     Route::post('/users/{user}/follow', [FollowController::class, 'store'])->name('users.follow');
     Route::delete('/users/{user}/unfollow', [FollowController::class, 'destroy'])->name('users.unfollow');
 
@@ -63,13 +60,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Search
     Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.users');
 
-    // Skills (Placeholder)
+    // Skills
     Route::post('/skills', [SkillController::class, 'store'])->name('skills.store');
     Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('skills.destroy');
 });
 
 
-// --- 3. CATCH-ALL ROUTE (WAJIB PALING BAWAH) ---
-// Route ini menangkap "username" di URL. Kalau ditaruh di atas,
-// halaman "dashboard" atau "posts" akan dianggap sebagai username.
+// Catch-all route (must be at the bottom)
 Route::middleware('auth')->get('/{username}', [PublicProfileController::class, 'show'])->name('profile.show');

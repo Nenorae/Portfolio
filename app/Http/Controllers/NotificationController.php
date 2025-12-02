@@ -7,32 +7,31 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    // index() GET: Halaman full list (opsional, fallback jika JS gagal)
+    /**
+     * Display a list of the user's notifications.
+     */
     public function index()
     {
         $notifications = Auth::user()->notifications()->paginate(20);
         return view('notifications.index', compact('notifications'));
     }
 
-    // [BARU] API untuk Drawer (Alpine.js)
+    /**
+     * Get the user's notifications as JSON.
+     */
     public function getJsonNotifications()
     {
-        // Ambil notifikasi user
         $notifications = Auth::user()->notifications()->limit(20)->get();
 
-        // Format data agar siap pakai di Frontend
+        // Format the notifications for the frontend
         $formatted = $notifications->map(function ($notif) {
             return [
                 'id' => $notif->id,
-                'type' => class_basename($notif->type), // Misal: PostLiked, UserFollowed
-                'data' => $notif->data, // Isi pesan notif
+                'type' => class_basename($notif->type),
+                'data' => $notif->data,
                 'read_at' => $notif->read_at,
                 'is_read' => !is_null($notif->read_at),
-                'created_at_human' => $notif->created_at->diffForHumans(null, true, true), // "2m", "1h"
-
-                // Avatar Logic: 
-                // Asumsi di data notifikasi kamu menyimpan 'user_name' atau 'user_id'
-                // Jika tidak ada, pakai default sistem
+                'created_at_human' => $notif->created_at->diffForHumans(null, true, true),
                 'avatar' => isset($notif->data['name'])
                     ? "https://ui-avatars.com/api/?name={$notif->data['name']}&background=random"
                     : "https://ui-avatars.com/api/?name=System&background=gray",
@@ -42,20 +41,23 @@ class NotificationController extends Controller
         return response()->json($formatted);
     }
 
-    // [UPDATE] Mark As Read via API
+    /**
+     * Mark a notification as read.
+     */
     public function markAsRead($id)
     {
         $notification = Auth::user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        // Return JSON jika request dari AJAX, redirect jika dari browser biasa
         if (request()->wantsJson()) {
             return response()->json(['status' => 'success']);
         }
         return back();
     }
 
-    // markAllAsRead() POST: Tandai semua dibaca
+    /**
+     * Mark all of the user's notifications as read.
+     */
     public function markAllAsRead()
     {
         Auth::user()->unreadNotifications->markAsRead();
@@ -66,7 +68,9 @@ class NotificationController extends Controller
         return back()->with('success', 'All notifications marked as read.');
     }
 
-    // destroy(Notification $notification) DELETE: Hapus notifikasi
+    /**
+     * Delete a notification.
+     */
     public function destroy($id)
     {
         $notification = Auth::user()->notifications()->findOrFail($id);

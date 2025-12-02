@@ -11,13 +11,13 @@ class Portfolio extends Model
         'user_id',
         'title',
         'description',
-        'image', // Path to the portfolio image
-        'github_link', // Link to GitHub repository
-        'demo_link', // Link to live demo
+        'image',
+        'github_link',
+        'demo_link',
     ];
 
     /**
-     * User pemilik portofolio.
+     * Get the user that owns the portfolio.
      */
     public function user(): BelongsTo
     {

@@ -14,7 +14,7 @@ class SkillController extends Controller
             'name' => 'required|string|max:30',
         ]);
 
-        // Cek biar gak duplikat skillnya
+        // Prevent duplicate skills
         $exists = Auth::user()->skills()->where('name', $request->name)->exists();
 
         if (!$exists) {
@@ -28,7 +28,7 @@ class SkillController extends Controller
 
     public function destroy(Skill $skill)
     {
-        // Pastikan yang menghapus adalah pemilik skill
+        // Ensure the user owns the skill before deleting
         if ($skill->user_id === Auth::id()) {
             $skill->delete();
         }

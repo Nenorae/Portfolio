@@ -5,15 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-//
-// Tugas:
-// - Representasi tabel likes
-// - Mengelola relasi like antara user dan post
-//
-// Relasi:
-// - user() belongsTo User
-// - post() belongsTo Post
-//
 class Like extends Model
 {
     protected $fillable = [
@@ -22,7 +13,7 @@ class Like extends Model
     ];
 
     /**
-     * User yang memberikan like.
+     * Get the user that liked the post.
      */
     public function user(): BelongsTo
     {
@@ -30,7 +21,7 @@ class Like extends Model
     }
 
     /**
-     * Post yang di-like.
+     * Get the post that was liked.
      */
     public function post(): BelongsTo
     {

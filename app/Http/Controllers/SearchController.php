@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
-    // ... method index biarkan saja ...
-
-    // Method ini yang dipakai oleh Search Drawer (Alpine.js)
+    /**
+     * Provide user search suggestions for the search drawer.
+     */
     public function suggestions(Request $request)
     {
         $query = $request->input('q');
@@ -18,27 +18,23 @@ class SearchController extends Controller
             return response()->json([]);
         }
 
-        // Cari user
+        // Search for users by username or name
         $users = User::where('username', 'like', "%{$query}%")
             ->orWhere('name', 'like', "%{$query}%")
-            ->limit(10) // Limit 10 biar ringan
+            ->limit(10)
             ->get();
 
-        // KITA FORMAT ULANG DATANYA AGAR FRONTEND TIDAK PUSING
+        // Format the user data for the frontend
         $formattedUsers = $users->map(function ($user) {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                // Pastikan username ada, jika tidak pakai nama tanpa spasi
                 'username' => $user->username ?? strtolower(str_replace(' ', '', $user->name)),
-
-                // Logika Avatar: Jika user punya avatar di DB, pakai itu. Jika tidak, pakai UI Avatars.
+                // Use the user's avatar if available, otherwise use a UI avatar
                 'avatar' => $user->avatar
                     ? asset('storage/' . $user->avatar)
                     : "https://ui-avatars.com/api/?name={$user->name}&background=random",
-
-                // Link menuju profil user tersebut
-                'profile_url' => route('profile.show', $user->username), // Gunakan username
+                'profile_url' => route('profile.show', $user->username),
             ];
         });
 

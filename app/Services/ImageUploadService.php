@@ -6,29 +6,16 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-//
-// Tugas:
-// - Handle upload gambar (profile photo & post image)
-// - Resize/compress gambar
-// - Hapus gambar lama
-// - Generate unique filename
-//
-// Methods:
-// - uploadProfilePhoto(\$file, \$user) Upload foto profil
-// - uploadPostImage(\$file) Upload gambar post, return path
-// - deleteImage(\$path) Hapus gambar
-// - resizeImage(\$file, \$width, \$height) Resize gambar (opsional)
-//
 class ImageUploadService
 {
     /**
-     * Upload dan update foto profil user.
+     * Upload and update the user's profile photo.
      *
-     * @return string Path gambar yang baru.
+     * @return string Path of the new image.
      */
     public function uploadProfilePhoto(UploadedFile $file, User $user): string
     {
-        // Hapus foto profil lama jika ada
+        // Delete the old profile photo if it exists
         if ($user->profile_photo) {
             $this->deleteImage($user->profile_photo);
         }
@@ -40,9 +27,9 @@ class ImageUploadService
     }
 
     /**
-     * Upload gambar untuk post.
+     * Upload an image for a post.
      *
-     * @return string Path gambar yang diupload.
+     * @return string Path of the uploaded image.
      */
     public function uploadPostImage(UploadedFile $file): string
     {
@@ -50,7 +37,7 @@ class ImageUploadService
     }
 
     /**
-     * Hapus file gambar dari storage.
+     * Delete an image file from storage.
      */
     public function deleteImage(?string $path): void
     {
@@ -64,25 +51,15 @@ class ImageUploadService
      */
     protected function upload(UploadedFile $file, string $directory): string
     {
-        // Generate unique filename
         $filename = uniqid().'_'.time().'.'.$file->getClientOriginalExtension();
 
-        // Store file
         return $file->storeAs($directory, $filename, 'public');
     }
 
     /**
-     * Resize gambar. (Membutuhkan library tambahan seperti Intervention/image)
-     *
-     * @param  \Illuminate\Http\UploadedFile  $file
-     * @param  int  $width
-     * @param  int  $height
-     * @return mixed
+     * Resize image. (Requires additional library like Intervention/image)
      */
     // public function resizeImage(UploadedFile $file, int $width, int $height)
     // {
-    //     // Implementasi dengan library Intervention/image
-    //     // $image = Image::make($file)->fit($width, $height);
-    //     // return $image->save();
     // }
 }

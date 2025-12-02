@@ -9,25 +9,21 @@ use Illuminate\Support\Facades\Auth;
 
 class FollowController extends Controller
 {
-    // store(User $user) POST: Follow user
+    /**
+     * Follow a user.
+     */
     public function store(User $user)
     {
-        // Simpan hasil sync ke variabel
         $result = Auth::user()->following()->syncWithoutDetaching([$user->id]);
 
-        // Cek array 'attached'. 
-        // Jika ada isinya, berarti ini adalah FOLLOW BARU.
-        // Jika kosong, berarti user sudah follow sebelumnya (cuma iseng klik lagi).
+        // If the user was not already following, send a notification
         if (!empty($result['attached'])) {
-            // HANYA kirim notifikasi jika ini follow baru
             $user->notify(new NewFollower(Auth::user()));
         }
 
-        // Respon JSON untuk AJAX
         if (request()->wantsJson()) {
             return response()->json([
                 'following' => true,
-                // Update jumlah follower real-time
                 'followers_count' => $user->followers()->count() 
             ]);
         }
@@ -35,7 +31,9 @@ class FollowController extends Controller
         return back();
     }
 
-    // destroy(User $user) DELETE: Unfollow user
+    /**
+     * Unfollow a user.
+     */
     public function destroy(User $user)
     {
         Auth::user()->following()->detach($user->id);
@@ -48,15 +46,3 @@ class FollowController extends Controller
         return back()->with('success', 'Unfollowed ' . $user->name);
     }
 }
-
-
-//
-// Tugas:
-// - Follow user lain
-// - Unfollow user
-// - Kirim notifikasi saat follow
-//
-// Methods:
-// - store(User \$user) POST: Follow user
-// - destroy(User \$user) DELETE: Unfollow user
-//
